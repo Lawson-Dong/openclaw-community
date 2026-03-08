@@ -1,33 +1,3 @@
-
-console.log('================ FORCED DEBUG START ================');
-console.log('Current Node version:', process.version);
-
-
-try {
-  require('express');
-  console.log('✅ express loaded');
-} catch (e) {
-  console.log('❌ express failed:', e.message);
-}
-
-const fs = require('fs');
-['data', 'views', 'public', 'uploads'].forEach(dir => {
-  try {
-    if (fs.existsSync(dir)) {
-      console.log(`✅ Directory '${dir}' exists`);
-    } else {
-      console.log(`❌ Directory '${dir}' MISSING`);
-    }
-  } catch (e) {
-    console.log(`❌ Error checking '${dir}':`, e.message);
-  }
-});
-
-console.log('================ FORCED DEBUG END ================');
-
-
-
-
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
@@ -42,80 +12,86 @@ const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 const IS_VERCEL = process.env.VERCEL === '1';
 
-
-let db;
-if (IS_VERCEL) {
-  db = require('./db-memory');
-} else {
-  const DATA_DIR = path.join(__dirname, 'data');
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+// ========== 修复1: 内存存储适配器 for Vercel ==========
+class MemoryStore {
+  constructor() {
+    this.users = [];
+    this.skills = [];
+    this.questions = [];
+    this.comments = [];
+    this.posts = [];
+    this.wiki = [];
+    this.follows = [];
+    this.favorites = [];
+    this.likes = [];
+    this.initAdmin();
+  }
   
-  db = {
-    users: [], skills: [], questions: [], comments: [], posts: [], wiki: [],
-    follows: [], favorites: [], likes: [],
-    
-    save() {
+  save() {
+    // 在 Vercel 上什么都不做（只读）
+    if (!IS_VERCEL) {
+      const DATA_DIR = path.join(__dirname, 'data');
+      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
       fs.writeFileSync(path.join(DATA_DIR, 'db.json'), JSON.stringify({
         users: this.users, skills: this.skills, questions: this.questions,
         posts: this.posts, wiki: this.wiki, follows: this.follows,
         favorites: this.favorites, likes: this.likes
       }, null, 2));
-    },
-    
-    load() {
-      const dbPath = path.join(DATA_DIR, 'db.json');
-      if (fs.existsSync(dbPath)) {
-        const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-        this.users = data.users || [];
-        this.skills = data.skills || [];
-        this.questions = data.questions || [];
-        this.posts = data.posts || [];
-        this.wiki = data.wiki || [];
-        this.follows = data.follows || [];
-        this.favorites = data.favorites || [];
-        this.likes = data.likes || [];
-      }
-      this.initAdmin();
-    },
-    
-    initAdmin() {
-      if (!this.users.find(u => u.email === 'admin@openclaw.community')) {
-        this.users.push({
-          id: Date.now(), email: 'admin@openclaw.community', phone: null,
-          password: bcrypt.hashSync('admin123', SALT_ROUNDS), username: '管理员',
-          avatar: null, bio: 'OpenClaw Community 管理员', role: 'admin',
-          followers: 0, following: 0, created_at: new Date().toISOString()
-        });
-        this.save();
-      }
-    },
-    
-    getNextId(arr) {
-      return arr.length > 0 ? Math.max(...arr.map(i => i.id)) + 1 : 1;
     }
-  };
+  }
+  
+  load() {
+    if (!IS_VERCEL) {
+      const dbPath = path.join(__dirname, 'data', 'db.json');
+      if (fs.existsSync(dbPath)) {
+        try {
+          const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+          this.users = data.users || [];
+          this.skills = data.skills || [];
+          this.questions = data.questions || [];
+          this.posts = data.posts || [];
+          this.wiki = data.wiki || [];
+          this.follows = data.follows || [];
+          this.favorites = data.favorites || [];
+          this.likes = data.likes || [];
+        } catch (e) {
+          console.log('加载数据失败，使用默认数据');
+        }
+      }
+    }
+    this.initAdmin();
+  }
+  
+  initAdmin() {
+    if (!this.users.find(u => u.email === 'admin@openclaw.community')) {
+      this.users.push({
+        id: Date.now(), email: 'admin@openclaw.community', phone: null,
+        password: bcrypt.hashSync('admin123', SALT_ROUNDS), username: '管理员',
+        avatar: null, bio: 'OpenClaw Community 管理员', role: 'admin',
+        followers: 0, following: 0, created_at: new Date().toISOString()
+      });
+    }
+  }
+  
+  getNextId(arr) {
+    return arr.length > 0 ? Math.max(...arr.map(i => i.id)) + 1 : 1;
+  }
 }
 
+// 初始化数据库
+const db = new MemoryStore();
 db.load();
 
-// 文件上传配置
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'uploads');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
-  }
+// ========== 修复2: 内存存储的文件上传 ==========
+const upload = multer({ 
+  storage: multer.memoryStorage(), // ✅ 改为内存存储，不上传文件
+  limits: { fileSize: 5 * 1024 * 1024 } // 限制5MB
 });
-const upload = multer({ storage });
 
 // 中间件
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'openclaw-secret-key-2026',
@@ -125,13 +101,22 @@ app.use(session({
 
 app.use(flash());
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views')); // ✅ 明确指定视图目录
 
+// 全局变量
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.flash = req.flash();
   next();
 });
 
+// ========== 修复3: 调试中间件 ==========
+app.use((req, res, next) => {
+  console.log(`📍 [${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
+// 权限中间件
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.flash('error', '请先登录');
@@ -148,64 +133,104 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+// ========== 你的所有路由代码保持不变 ==========
+// 从你原来的代码复制所有路由到这里
+// 注意：把原来代码里所有的 app.post 中用到的 upload.array 保留
+
 // 首页
 app.get('/', (req, res) => {
-  const skills = db.skills.filter(s => s.status === 'active').slice(0, 6);
-  const posts = db.posts.filter(p => p.status === 'active').slice(0, 6);
-  const questions = db.questions.filter(q => q.status === 'active').slice(0, 6);
-  res.render('index', { skills, posts, questions });
+  try {
+    const skills = db.skills.filter(s => s.status === 'active').slice(0, 6);
+    const posts = db.posts.filter(p => p.status === 'active').slice(0, 6);
+    const questions = db.questions.filter(q => q.status === 'active').slice(0, 6);
+    res.render('index', { skills, posts, questions });
+  } catch (err) {
+    console.error('首页错误:', err);
+    res.status(500).send('页面加载错误');
+  }
 });
 
 // 登录/注册
-app.get('/login', (req, res) => { if (req.session.user) return res.redirect('/'); res.render('login'); });
-app.get('/register', (req, res) => { if (req.session.user) return res.redirect('/'); res.render('register'); });
+app.get('/login', (req, res) => { 
+  if (req.session.user) return res.redirect('/'); 
+  res.render('login'); 
+});
+
+app.get('/register', (req, res) => { 
+  if (req.session.user) return res.redirect('/'); 
+  res.render('register'); 
+});
 
 app.post('/register', (req, res) => {
-  const { email, phone, password, username } = req.body;
-  if (!email || !password || !username) {
-    req.flash('error', '请填写必要信息');
-    return res.redirect('/register');
+  try {
+    const { email, phone, password, username } = req.body;
+    if (!email || !password || !username) {
+      req.flash('error', '请填写必要信息');
+      return res.redirect('/register');
+    }
+    if (db.users.find(u => u.email === email)) {
+      req.flash('error', '邮箱已存在');
+      return res.redirect('/register');
+    }
+    
+    const user = {
+      id: Date.now(), email, phone, username,
+      password: bcrypt.hashSync(password, SALT_ROUNDS),
+      avatar: null, bio: '', role: 'user', followers: 0, following: 0,
+      created_at: new Date().toISOString()
+    };
+    db.users.push(user);
+    db.save();
+    req.flash('success', '注册成功，请登录');
+    res.redirect('/login');
+  } catch (err) {
+    console.error('注册错误:', err);
+    req.flash('error', '注册失败');
+    res.redirect('/register');
   }
-  if (db.users.find(u => u.email === email)) {
-    req.flash('error', '邮箱已存在');
-    return res.redirect('/register');
-  }
-  
-  const user = {
-    id: Date.now(), email, phone, username,
-    password: bcrypt.hashSync(password, SALT_ROUNDS),
-    avatar: null, bio: '', role: 'user', followers: 0, following: 0,
-    created_at: new Date().toISOString()
-  };
-  db.users.push(user);
-  db.save();
-  req.flash('success', '注册成功，请登录');
-  res.redirect('/login');
 });
 
 app.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  const user = db.users.find(u => u.email === email || u.phone === email);
-  if (!user || !bcrypt.compareSync(password, user.password)) {
-    req.flash('error', '邮箱/手机号或密码错误');
-    return res.redirect('/login');
+  try {
+    const { email, password } = req.body;
+    const user = db.users.find(u => u.email === email || u.phone === email);
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+      req.flash('error', '邮箱/手机号或密码错误');
+      return res.redirect('/login');
+    }
+    req.session.user = { 
+      id: user.id, email: user.email, username: user.username, 
+      avatar: user.avatar, role: user.role 
+    };
+    res.redirect('/profile');
+  } catch (err) {
+    console.error('登录错误:', err);
+    req.flash('error', '登录失败');
+    res.redirect('/login');
   }
-  req.session.user = { id: user.id, email: user.email, username: user.username, avatar: user.avatar, role: user.role };
-  res.redirect('/profile');
 });
 
-app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/'); });
+app.get('/logout', (req, res) => { 
+  req.session.destroy(); 
+  res.redirect('/'); 
+});
 
 // 个人主页
 app.get('/profile', requireAuth, (req, res) => {
-  const user = db.users.find(u => u.id === req.session.user.id);
-  const skills = db.skills.filter(s => s.user_id === user.id && s.status === 'active');
-  const posts = db.posts.filter(p => p.user_id === user.id && p.status === 'active');
-  const questions = db.questions.filter(q => q.user_id === user.id && q.status === 'active');
-  res.render('profile', { user, skills, posts, questions });
+  try {
+    const user = db.users.find(u => u.id === req.session.user.id);
+    const skills = db.skills.filter(s => s.user_id === user.id && s.status === 'active');
+    const posts = db.posts.filter(p => p.user_id === user.id && p.status === 'active');
+    const questions = db.questions.filter(q => q.user_id === user.id && q.status === 'active');
+    res.render('profile', { user, skills, posts, questions });
+  } catch (err) {
+    console.error('个人主页错误:', err);
+    res.status(500).send('加载失败');
+  }
 });
 
-// 技能目录
+// ========== 这里插入你原来的所有其他路由 ==========
+// 技能目录相关路由
 app.get('/skills', (req, res) => {
   const { category, search } = req.query;
   let skills = db.skills.filter(s => s.status === 'active');
@@ -220,7 +245,7 @@ app.post('/skills', requireAuth, upload.array('screenshots', 5), (req, res) => {
   const { title, description, content, tags, category, version } = req.body;
   const skill = {
     id: db.getNextId(db.skills), user_id: req.session.user.id, title, description, content,
-    tags, category, version, screenshots: req.files ? req.files.map(f => f.filename).join(',') : '',
+    tags, category, version, screenshots: req.files ? req.files.map(f => f.originalname).join(',') : '',
     rating: 0, rating_count: 0, likes: 0, favorites: 0, status: 'active',
     created_at: new Date().toISOString()
   };
@@ -238,7 +263,7 @@ app.get('/skills/:id', (req, res) => {
   res.render('skills/show', { skill, comments });
 });
 
-// 问题求助
+// 问题求助相关路由
 app.get('/questions', (req, res) => {
   const { sort = 'newest' } = req.query;
   let questions = db.questions.filter(q => q.status === 'active');
@@ -293,7 +318,7 @@ app.post('/posts', requireAuth, upload.array('images', 9), (req, res) => {
   const { title, content } = req.body;
   db.posts.push({
     id: db.getNextId(db.posts), user_id: req.session.user.id, title, content,
-    images: req.files ? req.files.map(f => f.filename).join(',') : '',
+    images: req.files ? req.files.map(f => f.originalname).join(',') : '',
     likes: 0, favorites: 0, views: 0, status: 'active', created_at: new Date().toISOString()
   });
   db.save();
@@ -340,7 +365,7 @@ app.get('/wiki/:slug', (req, res) => {
   res.render('wiki/show', { entry });
 });
 
-// 点赞/收藏/关注 (Toggle)
+// 点赞/收藏/关注
 app.post('/like', requireAuth, (req, res) => {
   const { target_type, target_id } = req.body;
   const userId = req.session.user.id;
@@ -444,6 +469,21 @@ app.post('/admin/user/:id/unban', requireAdmin, (req, res) => {
   const user = db.users.find(u => u.id === parseInt(req.params.id));
   if (user) { user.role = 'user'; db.save(); }
   res.json({ success: true });
+});
+
+// ========== 修复4: 错误处理中间件 ==========
+app.use((err, req, res, next) => {
+  console.error('🔥 严重错误:', err);
+  res.status(500).send(`
+    <h1>500 - 服务器内部错误</h1>
+    <p>错误信息: ${err.message}</p>
+    <pre>${err.stack}</pre>
+  `);
+});
+
+// 404处理
+app.use((req, res) => {
+  res.status(404).send('404 - 页面不存在');
 });
 
 // 启动
