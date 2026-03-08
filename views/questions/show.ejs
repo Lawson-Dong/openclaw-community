@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= question.title %> - OpenClaw Community</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container my-5">
+    <div class="row">
+      <!-- 左侧内容 -->
+      <div class="col-lg-8">
+        <!-- 问题主体 -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h1 class="h3 mb-3"><%= question.title %></h1>
+
+            <div class="d-flex align-items-center mb-3">
+              <i class="bi bi-person-circle fs-4 me-2 text-muted"></i>
+              <div>
+                <a href="/user/<%= question.user_id %>" class="text-decoration-none fw-bold"><%= question.username %></a>
+                <div class="text-muted small">发布于 <%= new Date(question.created_at).toLocaleString() %> · <%= question.views %> 浏览</div>
+              </div>
+            </div>
+
+            <div class="content-body mb-3">
+              <%- question.contentHtml %>
+            </div>
+
+            <div class="mb-3">
+              <% if (question.tags) { %>
+                <% question.tags.split(',').forEach(tag => { %>
+                  <span class="badge bg-light text-dark me-1"><%= tag.trim() %></span>
+                <% }) %>
+              <% } %>
+            </div>
+
+            <div class="d-flex gap-2">
+              <% if (typeof user !== 'undefined' && user) { %>
+                <button class="btn btn-outline-danger btn-sm" onclick="likeItem('question', <%= question.id %>)">
+                  <i class="bi bi-heart"></i> 喜欢 (<%= question.likes %>)
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="favoriteItem('question', <%= question.id %>)">
+                  <i class="bi bi-bookmark"></i> 收藏 (<%= question.favorites %>)
+                </button>
+              <% } else { %>
+                <a href="/login" class="btn btn-outline-danger btn-sm">
+                  <i class="bi bi-heart"></i> 喜欢 (<%= question.likes %>)
+                </a>
+                <a href="/login" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-bookmark"></i> 收藏 (<%= question.favorites %>)
+                </a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <!-- 评论区 -->
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-chat-dots"></i> 回答 (<%= comments ? comments.length : 0 %>)
+          </div>
+          <div class="card-body">
+            <% if (typeof user !== 'undefined' && user) { %>
+              <form id="commentForm" class="mb-4">
+                <div class="mb-3">
+                  <textarea class="form-control" id="commentContent" rows="4" placeholder="写下你的回答..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">提交回答</button>
+              </form>
+            <% } else { %>
+              <div class="alert alert-info">
+                <a href="/login">登录</a> 后参与讨论
+              </div>
+            <% } %>
+
+            <div id="commentsList">
+              <% if (comments && comments.length > 0) { %>
+                <% comments.forEach(comment => { %>
+                  <div class="comment-item">
+                    <div class="d-flex">
+                      <i class="bi bi-person-circle fs-4 me-2 text-muted"></i>
+                      <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                          <a href="/user/<%= comment.user_id %>" class="fw-bold text-decoration-none"><%= comment.username %></a>
+                          <small class="text-muted"><%= new Date(comment.created_at).toLocaleString() %></small>
+                        </div>
+                        <p class="mb-1"><%= comment.content %></p>
+                        <div>
+                          <button class="btn btn-sm btn-link text-muted" onclick="likeItem('comment', <%= comment.id %>)">
+                            <i class="bi bi-hand-thumbs-up"></i> <%= comment.likes %>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <p class="text-muted text-center py-3">暂无回答，来做第一个回答者吧~</p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧边栏 -->
+      <div class="col-lg-4">
+        <div class="card mb-3">
+          <div class="card-body text-center">
+            <i class="bi bi-person-circle display-4 text-muted"></i>
+            <h5 class="mt-2"><%= question.username %></h5>
+            <a href="/user/<%= question.user_id %>" class="btn btn-outline-primary btn-sm">查看主页</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">相关问题</div>
+          <div class="card-body">
+            <p class="text-muted text-center">功能开发中...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    document.getElementById('commentForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const content = document.getElementById('commentContent').value;
+      if (!content.trim()) return;
+
+      const res = await fetch('/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_type: 'question', target_id: <%= question.id %>, content })
+      });
+
+      if (res.ok) {
+        location.reload();
+      }
+    });
+  </script>
+</body>
+</html>

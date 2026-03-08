@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分享创意 - OpenClaw Community</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="mb-0"><i class="bi bi-file-text text-success"></i> 分享你的创意</h4>
+          </div>
+          <div class="card-body">
+            <form action="/posts" method="POST" enctype="multipart/form-data">
+              <div class="mb-3">
+                <label class="form-label">标题 *</label>
+                <input type="text" name="title" class="form-control" placeholder="给你的分享起一个吸引人的标题" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">内容 *</label>
+                <textarea name="content" class="form-control" rows="10" placeholder="分享你用OpenClaw做的有趣事情：
+
+- 你用它解决了什么问题？
+- 具体的实现思路是什么？
+- 有什么心得或踩坑经验？
+- 如果是商业项目，可以分享收益情况" required></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">配图</label>
+                <input type="file" name="images" class="form-control" multiple accept="image/*">
+                <div class="form-text">最多上传9张图片，让分享更生动</div>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <a href="/posts" class="btn btn-outline-secondary">取消</a>
+                <button type="submit" class="btn btn-success">
+                  <i class="bi bi-check-lg"></i> 发布分享
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

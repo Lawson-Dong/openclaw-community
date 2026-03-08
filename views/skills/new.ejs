@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>发布技能 - OpenClaw Community</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="mb-0"><i class="bi bi-plus-circle text-primary"></i> 发布新技能</h4>
+          </div>
+          <div class="card-body">
+            <form action="/skills" method="POST" enctype="multipart/form-data">
+              <div class="mb-3">
+                <label class="form-label">技能名称 *</label>
+                <input type="text" name="title" class="form-control" placeholder="给你的技能起一个响亮的名字" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">分类 *</label>
+                <select name="category" class="form-select" required>
+                  <option value="">选择分类</option>
+                  <option value="web-automation">网页自动化</option>
+                  <option value="data-scraping">数据抓取</option>
+                  <option value="office">办公自动化</option>
+                  <option value="trading">交易/金融</option>
+                  <option value="content">内容创作</option>
+                  <option value="other">其他</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">标签</label>
+                <input type="text" name="tags" class="form-control" placeholder="用逗号分隔，如：自动化,办公,Excel">
+                <div class="form-text">帮助用户更容易找到你的技能</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">兼容版本</label>
+                <input type="text" name="version" class="form-control" placeholder="如：OpenClaw 1.0+">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">简介 *</label>
+                <textarea name="description" class="form-control" rows="3" placeholder="简短描述这个技能的功能和用途" required></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">详细说明 (支持Markdown)</label>
+                <textarea name="content" class="form-control" rows="10" placeholder="# 使用说明
+
+## 安装步骤
+1. ...
+2. ...
+
+## 使用方法
+...
+
+## 注意事项
+..."></textarea>
+                <div class="form-text">支持Markdown格式，可以包含代码块、列表等</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">截图/预览</label>
+                <input type="file" name="screenshots" class="form-control" multiple accept="image/*">
+                <div class="form-text">最多上传5张图片</div>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <a href="/skills" class="btn btn-outline-secondary">取消</a>
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-check-lg"></i> 发布技能
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

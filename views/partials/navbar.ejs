@@ -1,0 +1,68 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">
+      <i class="bi bi-robot"></i> OpenClaw Community
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/skills"><i class="bi bi-code-square"></i> 技能目录</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/questions"><i class="bi bi-question-circle"></i> 问题求助</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/posts"><i class="bi bi-file-text"></i> 创意分享</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/wiki"><i class="bi bi-book"></i> Wiki</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+        <% if (typeof user !== 'undefined' && user) { %>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle"></i> <%= user.username %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i> 个人主页</a></li>
+              <% if (user.role === 'admin') { %>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/admin"><i class="bi bi-shield"></i> 后台管理</a></li>
+              <% } %>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> 退出</a></li>
+            </ul>
+          </li>
+        <% } else { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/login">登录</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-light btn-sm ms-2 mt-1" href="/register">注册</a>
+          </li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<% if (typeof flash !== 'undefined' && flash.error) { %>
+  <div class="container mt-3">
+    <div class="alert alert-danger alert-dismissible fade show">
+      <%= flash.error %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  </div>
+<% } %>
+<% if (typeof flash !== 'undefined' && flash.success) { %>
+  <div class="container mt-3">
+    <div class="alert alert-success alert-dismissible fade show">
+      <%= flash.success %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  </div>
+<% } %>

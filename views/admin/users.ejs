@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户管理 - OpenClaw Community</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container-fluid my-4">
+    <div class="row">
+      <!-- 侧边栏 -->
+      <div class="col-md-2">
+        <div class="card admin-sidebar">
+          <div class="card-header bg-dark text-white">
+            <i class="bi bi-shield"></i> 管理菜单
+          </div>
+          <div class="list-group list-group-flush">
+            <a href="/admin" class="list-group-item list-group-item-action">
+              <i class="bi bi-speedometer2"></i> 仪表盘
+            </a>
+            <a href="/admin/users" class="list-group-item list-group-item-action active">
+              <i class="bi bi-people"></i> 用户管理
+            </a>
+            <a href="/admin/skills" class="list-group-item list-group-item-action">
+              <i class="bi bi-code-square"></i> 技能审核
+            </a>
+            <a href="/admin/wiki" class="list-group-item list-group-item-action">
+              <i class="bi bi-book"></i> Wiki审核
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主内容区 -->
+      <div class="col-md-10">
+        <h2 class="mb-4"><i class="bi bi-people"></i> 用户管理</h2>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>邮箱</th>
+                    <th>角色</th>
+                    <th>粉丝</th>
+                    <th>注册时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (users && users.length > 0) { %>
+                    <% users.forEach(user => { %>
+                      <tr>
+                        <td><%= user.id %></td>
+                        <td><%= user.username %></td>
+                        <td><%= user.email %></td>
+                        <td>
+                          <% if (user.role === 'admin') { %>
+                            <span class="badge bg-danger">管理员</span>
+                          <% } else if (user.role === 'banned') { %>
+                            <span class="badge bg-secondary">已封禁</span>
+                          <% } else { %>
+                            <span class="badge bg-primary">用户</span>
+                          <% } %>
+                        </td>
+                        <td><%= user.followers %></td>
+                        <td><%= new Date(user.created_at).toLocaleDateString() %></td>
+                        <td>
+                          <% if (user.role !== 'admin') { %>
+                            <% if (user.role === 'banned') { %>
+                              <button class="btn btn-sm btn-success" onclick="unbanUser(<%= user.id %>)">解封</button>
+                            <% } else { %>
+                              <button class="btn btn-sm btn-warning" onclick="banUser(<%= user.id %>)">封禁</button>
+                            <% } %>
+                          <% } %>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function banUser(id) {
+      if (!confirm('确定要封禁该用户吗？')) return;
+      const res = await fetch(`/admin/user/${id}/ban`, { method: 'POST' });
+      if (res.ok) location.reload();
+    }
+
+    async function unbanUser(id) {
+      if (!confirm('确定要解封该用户吗？')) return;
+      const res = await fetch(`/admin/user/${id}/unban`, { method: 'POST' });
+      if (res.ok) location.reload();
+    }
+  </script>
+</body>
+</html>

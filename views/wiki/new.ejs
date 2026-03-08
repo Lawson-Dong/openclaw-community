@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新建Wiki词条 - OpenClaw Community</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="mb-0"><i class="bi bi-book text-info"></i> 新建Wiki词条</h4>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle"></i> 词条提交后需要管理员审核才会显示
+            </div>
+            <form action="/wiki" method="POST">
+              <div class="mb-3">
+                <label class="form-label">词条名称 *</label>
+                <input type="text" name="title" class="form-control" placeholder="如：OpenClaw, AI Agent, Prompt Engineering" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">URL标识 *</label>
+                <input type="text" name="slug" class="form-control" placeholder="如：openclaw, ai-agent（仅支持英文、数字、连字符）" required>
+                <div class="form-text">用于URL访问，如 /wiki/openclaw</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">分类 *</label>
+                <select name="category" class="form-select" required>
+                  <option value="">选择分类</option>
+                  <option value="concept">基础概念</option>
+                  <option value="tool">工具/平台</option>
+                  <option value="technique">技术方法</option>
+                  <option value="case">案例实践</option>
+                  <option value="other">其他</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">词条内容 * (支持Markdown)</label>
+                <textarea name="content" class="form-control" rows="15" placeholder="# 词条标题
+
+## 简介
+简要介绍这个名词...
+
+## 详细说明
+详细内容...
+
+## 相关链接
+- [链接1](url)
+- [链接2](url)" required></textarea>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <a href="/wiki" class="btn btn-outline-secondary">取消</a>
+                <button type="submit" class="btn btn-info text-white">
+                  <i class="bi bi-check-lg"></i> 提交审核
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

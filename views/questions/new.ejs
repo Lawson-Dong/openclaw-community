@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>提问 - OpenClaw Community</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="mb-0"><i class="bi bi-question-circle text-danger"></i> 提出新问题</h4>
+          </div>
+          <div class="card-body">
+            <form action="/questions" method="POST">
+              <div class="mb-3">
+                <label class="form-label">问题标题 *</label>
+                <input type="text" name="title" class="form-control" placeholder="一句话描述你的问题" required>
+                <div class="form-text">标题要简洁明了，让别人一眼明白你想问什么</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">标签</label>
+                <input type="text" name="tags" class="form-control" placeholder="用逗号分隔，如：安装,报错,配置">
+                <div class="form-text">添加标签帮助更多人看到你的问题</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">问题详情 *</label>
+                <textarea name="content" class="form-control" rows="10" placeholder="详细描述你的问题：
+
+- 你遇到了什么问题？
+- 你已经尝试过哪些解决方法？
+- 相关的错误信息是什么？
+- 你的环境配置（操作系统、OpenClaw版本等）" required></textarea>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <a href="/questions" class="btn btn-outline-secondary">取消</a>
+                <button type="submit" class="btn btn-danger">
+                  <i class="bi bi-check-lg"></i> 发布问题
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

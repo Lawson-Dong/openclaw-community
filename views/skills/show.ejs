@@ -1,0 +1,222 @@
+<%- include('../layout') %>
+
+<% title = skill.title + ' - OpenClaw Community' %>
+
+<% body = %>
+  <div class="container my-5">
+    <div class="row">
+      <!-- 左侧内容 -->
+      <div class="col-lg-8">
+        <!-- 技能头部 -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <span class="badge bg-primary mb-2"><%= skill.category || '未分类' %></span>
+                <h1 class="h3 mb-2"><%= skill.title %></h1>
+              </div>
+              <div class="text-end">
+                <div class="text-warning h4 mb-0">
+                  <i class="bi bi-star-fill"></i> <%= skill.rating || 0 %>
+                </div>
+                <small class="text-muted"><%= skill.rating_count || 0 %> 评分</small>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center mb-3">
+              <i class="bi bi-person-circle fs-4 me-2 text-muted"></i>
+              <div>
+                <a href="/user/<%= skill.user_id %>" class="text-decoration-none fw-bold"><%= skill.username %></a>
+                <div class="text-muted small">发布于 <%= new Date(skill.created_at).toLocaleDateString() %></div>
+              </div>
+            </div>
+
+            <p class="text-muted"><%= skill.description %></p>
+
+            <div class="mb-3">
+              <% if (skill.tags) { %>
+                <% skill.tags.split(',').forEach(tag => { %>
+                  <span class="badge bg-light text-dark me-1"><%= tag.trim() %></span>
+                <% }) %>
+              <% } %>
+            </div>
+
+            <div class="d-flex gap-2">
+              <% if (typeof user !== 'undefined' && user) { %>
+                <button class="btn btn-outline-danger" data-like="skill" data-id="<%= skill.id %>">
+                  <i class="bi bi-heart"></i> 喜欢 (<span class="count"><%= skill.likes %></span>)
+                </button>
+                <button class="btn btn-outline-primary" data-favorite="skill" data-id="<%= skill.id %>">
+                  <i class="bi bi-bookmark"></i> 收藏 (<span class="count"><%= skill.favorites %></span>)
+                </button>
+              <% } else { %>
+                <a href="/login" class="btn btn-outline-danger">
+                  <i class="bi bi-heart"></i> 喜欢 (<%= skill.likes %>)
+                </a>
+                <a href="/login" class="btn btn-outline-primary">
+                  <i class="bi bi-bookmark"></i> 收藏 (<%= skill.favorites %>)
+                </a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <!-- 截图展示 -->
+        <% if (skill.screenshots) { %>
+          <div class="card mb-4">
+            <div class="card-header">预览截图</div>
+            <div class="card-body">
+              <div class="row">
+                <% skill.screenshots.split(',').forEach(img => { %>
+                  <div class="col-md-4 mb-3">
+                    <img src="/uploads/<%= img %>" class="img-fluid rounded" alt="截图">
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- 详细说明 -->
+        <div class="card mb-4">
+          <div class="card-header">详细说明</div>
+          <div class="card-body content-body">
+            <%- skill.contentHtml %>
+          </div>
+        </div>
+
+        <!-- 技能使用案例 -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <i class="bi bi-lightbulb"></i> 技能使用案例
+          </div>
+          <div class="card-body">
+            <% if (skill.use_cases) { %>
+              <div class="space-y-3">
+                <% skill.use_cases.split('\n').forEach(caseItem => { %>
+                  <% if (caseItem.trim()) { %>
+                    <div class="p-3 bg-light rounded">
+                      <p class="mb-0"><i class="bi bi-check-circle text-success me-2"></i><%= caseItem.trim() %></p>
+                    </div>
+                  <% } %>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <p class="text-muted text-center py-3">暂无使用案例，欢迎分享你的使用经验~</p>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- 兼容性 -->
+        <% if (skill.version) { %>
+          <div class="card mb-4">
+            <div class="card-header">兼容性</div>
+            <div class="card-body">
+              <p class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> 兼容版本: <%= skill.version %></p>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- 评论区 -->
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-chat-dots"></i> 评论 (<%= comments ? comments.length : 0 %>)
+          </div>
+          <div class="card-body">
+            <% if (typeof user !== 'undefined' && user) { %>
+              <form id="commentForm" class="mb-4">
+                <div class="mb-3">
+                  <textarea class="form-control" id="commentContent" rows="3" placeholder="写下你的评论..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">发表评论</button>
+              </form>
+            <% } else { %>
+              <div class="alert alert-info">
+                <a href="/login">登录</a> 后发表评论
+              </div>
+            <% } %>
+
+            <div id="commentsList">
+              <% if (comments && comments.length > 0) { %>
+                <% comments.forEach(comment => { %>
+                  <div class="comment-item py-3 border-bottom">
+                    <div class="d-flex">
+                      <i class="bi bi-person-circle fs-4 me-2 text-muted"></i>
+                      <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                          <a href="/user/<%= comment.user_id %>" class="fw-bold text-decoration-none"><%= comment.username %></a>
+                          <small class="text-muted"><%= new Date(comment.created_at).toLocaleString() %></small>
+                        </div>
+                        <p class="mb-1"><%= comment.content %></p>
+                        <div>
+                          <button class="btn btn-sm btn-link text-muted" onclick="likeItem('comment', <%= comment.id %>)">
+                            <i class="bi bi-hand-thumbs-up"></i> <%= comment.likes %>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <p class="text-muted text-center py-3">暂无评论，来说两句吧~</p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧边栏 -->
+      <div class="col-lg-4">
+        <div class="card mb-3">
+          <div class="card-body text-center">
+            <i class="bi bi-person-circle display-4 text-muted"></i>
+            <h5 class="mt-2"><%= skill.username %></h5>
+            <a href="/user/<%= skill.user_id %>" class="btn btn-outline-primary btn-sm">查看主页</a>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">技能统计</div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">浏览量</span>
+              <span><%= skill.views || 0 %></span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">下载量</span>
+              <span><%= skill.downloads || 0 %></span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">分享量</span>
+              <span><%= skill.shares || 0 %></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">相关技能</div>
+          <div class="card-body">
+            <p class="text-muted text-center">功能开发中...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('commentForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const content = document.getElementById('commentContent').value;
+      if (!content.trim()) return;
+
+      const res = await fetch('/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_type: 'skill', target_id: <%= skill.id %>, content })
+      });
+
+      if (res.ok) {
+        location.reload();
+      }
+    });
+  </script>

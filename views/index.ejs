@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenClaw Community - 颠覆行业的AI Agent社区</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <!-- Hero Section -->
+  <section class="hero bg-primary text-white py-5">
+    <div class="container text-center">
+      <h1 class="display-4 fw-bold mb-3">🤖 OpenClaw Community</h1>
+      <p class="lead mb-4">我们正在干一件颠覆行业的事情</p>
+      <p class="mb-4">连接AI Agent开发者与用户，共建开放生态</p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="/skills" class="btn btn-light btn-lg">
+          <i class="bi bi-code-square"></i> 浏览技能
+        </a>
+        <a href="/register" class="btn btn-outline-light btn-lg">
+          <i class="bi bi-person-plus"></i> 加入社区
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="py-4 bg-light">
+    <div class="container">
+      <div class="row text-center">
+        <div class="col-md-3">
+          <h3 class="text-primary fw-bold">5000+</h3>
+          <p class="text-muted">AI技能</p>
+        </div>
+        <div class="col-md-3">
+          <h3 class="text-primary fw-bold">10000+</h3>
+          <p class="text-muted">开发者</p>
+        </div>
+        <div class="col-md-3">
+          <h3 class="text-primary fw-bold">50000+</h3>
+          <p class="text-muted">活跃用户</p>
+        </div>
+        <div class="col-md-3">
+          <h3 class="text-primary fw-bold">100万+</h3>
+          <p class="text-muted">任务执行</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container my-5">
+    <!-- Skills Section -->
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-code-square text-primary"></i> 最新技能</h2>
+        <a href="/skills" class="btn btn-outline-primary">查看全部</a>
+      </div>
+      <div class="row">
+        <% if (skills && skills.length > 0) { %>
+          <% skills.forEach(skill => { %>
+            <div class="col-md-4 mb-4">
+              <div class="card h-100 skill-card">
+                <div class="card-body">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-secondary me-2"><%= skill.category || '未分类' %></span>
+                    <span class="text-muted small"><i class="bi bi-star-fill text-warning"></i> <%= skill.rating || 0 %></span>
+                  </div>
+                  <h5 class="card-title">
+                    <a href="/skills/<%= skill.id %>" class="text-decoration-none"><%= skill.title %></a>
+                  </h5>
+                  <p class="card-text text-muted small"><%= skill.description ? skill.description.substring(0, 100) + '...' : '暂无描述' %></p>
+                  <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-person-circle me-1"></i>
+                      <small><%= skill.username %></small>
+                    </div>
+                    <div class="text-muted small">
+                      <i class="bi bi-heart"></i> <%= skill.likes %>
+                      <i class="bi bi-bookmark ms-2"></i> <%= skill.favorites %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="col-12 text-center py-5 text-muted">
+            <p>暂无技能，<a href="/skills/new">发布第一个技能</a></p>
+          </div>
+        <% } %>
+      </div>
+    </section>
+
+    <!-- Posts Section -->
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-file-text text-success"></i> 创意分享</h2>
+        <a href="/posts" class="btn btn-outline-success">查看全部</a>
+      </div>
+      <div class="row">
+        <% if (posts && posts.length > 0) { %>
+          <% posts.forEach(post => { %>
+            <div class="col-md-4 mb-4">
+              <div class="card h-100 post-card">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    <a href="/posts/<%= post.id %>" class="text-decoration-none"><%= post.title %></a>
+                  </h5>
+                  <p class="card-text text-muted small"><%= post.content ? post.content.substring(0, 80) + '...' : '暂无内容' %></p>
+                  <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-person-circle me-1"></i>
+                      <small><%= post.username %></small>
+                    </div>
+                    <div class="text-muted small">
+                      <i class="bi bi-eye"></i> <%= post.views %>
+                      <i class="bi bi-heart ms-2"></i> <%= post.likes %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="col-12 text-center py-5 text-muted">
+            <p>暂无分享，<a href="/posts/new">分享你的创意</a></p>
+          </div>
+        <% } %>
+      </div>
+    </section>
+
+    <!-- Questions Section -->
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-question-circle text-danger"></i> 问题求助</h2>
+        <a href="/questions" class="btn btn-outline-danger">查看全部</a>
+      </div>
+      <div class="list-group">
+        <% if (questions && questions.length > 0) { %>
+          <% questions.forEach(q => { %>
+            <a href="/questions/<%= q.id %>" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1"><%= q.title %></h5>
+                <small class="text-muted"><%= new Date(q.created_at).toLocaleDateString() %></small>
+              </div>
+              <p class="mb-1 text-muted"><%= q.content ? q.content.substring(0, 100) + '...' : '' %></p>
+              <small class="text-muted">
+                <i class="bi bi-person"></i> <%= q.username %>
+                <i class="bi bi-eye ms-2"></i> <%= q.views %>
+                <i class="bi bi-heart ms-2"></i> <%= q.likes %>
+              </small>
+            </a>
+          <% }) %>
+        <% } else { %>
+          <div class="text-center py-5 text-muted">
+            <p>暂无问题，<a href="/questions/new">提出第一个问题</a></p>
+          </div>
+        <% } %>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="py-5 bg-light rounded">
+      <div class="container">
+        <h2 class="text-center mb-5">社区特色</h2>
+        <div class="row g-4">
+          <div class="col-md-3 text-center">
+            <i class="bi bi-code-square display-4 text-primary mb-3"></i>
+            <h5>技能市场</h5>
+            <p class="text-muted small">发现、分享、交易OpenClaw技能</p>
+          </div>
+          <div class="col-md-3 text-center">
+            <i class="bi bi-question-circle display-4 text-danger mb-3"></i>
+            <h5>问题求助</h5>
+            <p class="text-muted small">遇到问题？社区帮你解决</p>
+          </div>
+          <div class="col-md-3 text-center">
+            <i class="bi bi-file-text display-4 text-success mb-3"></i>
+            <h5>创意分享</h5>
+            <p class="text-muted small">展示你的AI Agent应用案例</p>
+          </div>
+          <div class="col-md-3 text-center">
+            <i class="bi bi-book display-4 text-info mb-3"></i>
+            <h5>Wiki百科</h5>
+            <p class="text-muted small">AI Agent知识库，共建共享</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <%- include('partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
