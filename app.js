@@ -1,3 +1,33 @@
+
+console.log('================ FORCED DEBUG START ================');
+console.log('Current Node version:', process.version);
+
+
+try {
+  require('express');
+  console.log('✅ express loaded');
+} catch (e) {
+  console.log('❌ express failed:', e.message);
+}
+
+const fs = require('fs');
+['data', 'views', 'public', 'uploads'].forEach(dir => {
+  try {
+    if (fs.existsSync(dir)) {
+      console.log(`✅ Directory '${dir}' exists`);
+    } else {
+      console.log(`❌ Directory '${dir}' MISSING`);
+    }
+  } catch (e) {
+    console.log(`❌ Error checking '${dir}':`, e.message);
+  }
+});
+
+console.log('================ FORCED DEBUG END ================');
+
+
+
+
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
@@ -12,7 +42,7 @@ const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 const IS_VERCEL = process.env.VERCEL === '1';
 
-// 根据环境选择数据库
+
 let db;
 if (IS_VERCEL) {
   db = require('./db-memory');
